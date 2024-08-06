@@ -1,0 +1,130 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Mesas y Lista de Espera</title>
+    <style>
+        .mesa {
+            margin: 10px;
+            padding: 10px;
+            border: 1px solid #ccc;
+        }
+        .libre {
+            background-color: green;
+        }
+        .ocupada {
+            background-color: red;
+        }
+    </style>
+</head>
+<body>
+    <h1>Mesas</h1>
+    <div id="mesas"></div>
+
+    <h1>Lista de Espera</h1>
+    <input type="text" id="nombre" placeholder="Nombre">
+    <input type="number" id="numero" placeholder="Número">
+    <button onclick="agregarListaEspera()">Agregar</button>
+    <br>
+    <input type="number" id="numeroEliminar" placeholder="Número para eliminar">
+    <button onclick="eliminarListaEspera()">Eliminar</button>
+    <ul id="listaEspera"></ul>
+
+    <script>
+        const mesas = [10, 11, 12, 13, 14, 15, 16, 20, 21, 30, 22, 23, 31, 24, 25, 32, 26, 27, 33];
+        const listaEspera = JSON.parse(localStorage.getItem('listaEspera')) || [];
+
+        function guardarEstado() {
+            const estados = mesas.map(mesa => ({
+                numero: mesa,
+                horario: document.getElementById(`horario-${mesa}`).value,
+                estado: document.getElementById(`estado-${mesa}`).classList.contains('ocupada') ? 'ocupada' : 'libre'
+            }));
+            localStorage.setItem('estadosMesas', JSON.stringify(estados));
+        }
+
+        function cargarEstado() {
+            const estados = JSON.parse(localStorage.getItem('estadosMesas')) || [];
+            estados.forEach(({ numero, horario, estado }) => {
+                document.getElementById(`horario-${numero}`).value = horario;
+                const estadoBtn = document.getElementById(`estado-${numero}`);
+                estadoBtn.classList.remove('ocupada', 'libre');
+                estadoBtn.classList.add(estado);
+                estadoBtn.textContent = estado === 'ocupada' ? 'Ocupada' : 'Libre';
+            });
+        }
+
+        function toggleEstado(event, mesa) {
+            const btn = event.target;
+            if (btn.classList.contains('ocupada')) {
+                btn.classList.remove('ocupada');
+                btn.classList.add('libre');
+                btn.textContent = 'Libre';
+            } else {
+                btn.classList.remove('libre');
+                btn.classList.add('ocupada');
+                btn.textContent = 'Ocupada';
+            }
+            guardarEstado();
+        }
+
+        function crearMesa(numero) {
+            const div = document.createElement('div');
+            div.classList.add('mesa');
+            div.innerHTML = `
+                <h3>Mesa ${numero}</h3>
+                <input type="text" id="horario-${numero}" placeholder="Horario">
+                <button id="estado-${numero}" class="libre" onclick="toggleEstado(event, ${numero})">Libre</button>
+            `;
+            return div;
+        }
+
+        function renderMesas() {
+            const container = document.getElementById('mesas');
+            mesas.forEach(mesa => {
+                const mesaDiv = crearMesa(mesa);
+                container.appendChild(mesaDiv);
+            });
+        }
+
+        function agregarListaEspera() {
+            const nombre = document.getElementById('nombre').value;
+            const numero = document.getElementById('numero').value;
+            if (nombre && numero) {
+                listaEspera.push({ nombre, numero });
+                localStorage.setItem('listaEspera', JSON.stringify(listaEspera));
+                renderListaEspera();
+            }
+        }
+
+        function eliminarListaEspera() {
+            const numero = document.getElementById('numeroEliminar').value;
+            const index = listaEspera.findIndex(item => item.numero === numero);
+            if (index !== -1) {
+                listaEspera.splice(index, 1);
+                localStorage.setItem('listaEspera', JSON.stringify(listaEspera));
+                renderListaEspera();
+            }
+        }
+
+        function renderListaEspera() {
+            const lista = document.getElementById('listaEspera');
+            lista.innerHTML = '';
+            listaEspera.forEach(({ nombre, numero }) => {
+                const li = document.createElement('li');
+                li.textContent = `${nombre} - ${numero}`;
+                lista.appendChild(li);
+            });
+        }
+
+        document.addEventListener('DOMContentLoaded', () => {
+            renderMesas();
+            cargarEstado();
+            renderListaEspera();
+        });
+
+        document.addEventListener('input', guardarEstado);
+    </script>
+</body>
+</html>
