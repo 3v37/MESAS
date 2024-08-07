@@ -5,22 +5,31 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Mesas y Lista de Espera</title>
     <style>
+        .container {
+            grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+            gap: 10px;
+        }
         .mesa {
-            margin: 10px;
             padding: 10px;
             border: 1px solid #ccc;
+            text-align: center;
         }
         .libre {
             background-color: green;
+            color: white;
         }
         .ocupada {
             background-color: red;
+            color: white;
+        }
+        .espacio-adicional {
+            margin: 100px;
         }
     </style>
 </head>
 <body>
     <h1>Mesas</h1>
-    <div id="mesas"></div>
+    <div id="mesas" class="container"></div>
 
     <h1>Lista de Espera</h1>
     <input type="text" id="nombre" placeholder="Nombre">
@@ -72,6 +81,12 @@
         function crearMesa(numero) {
             const div = document.createElement('div');
             div.classList.add('mesa');
+
+
+            if (numero === 12 || numero === 15 || numero === 16 || numero === 30 || numero === 31 || numero === 32 || numero === 33) {
+                div.classList.add('espacio-adicional');
+            }
+
             div.innerHTML = `
                 <h3>Mesa ${numero}</h3>
                 <input type="text" id="horario-${numero}" placeholder="Horario">
